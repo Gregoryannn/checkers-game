@@ -180,3 +180,11 @@ p {
     border-radius: 100%;
     background: red;
 }
+
+.board__piece.dark {
+    background: red;
+}
+
+.board__piece.light {
+    background: yellow;
+}
