@@ -172,6 +172,10 @@ p {
     background: #606062;
 }
 
+.board__square.selected {
+    background: pink;
+}
+
 .board__piece {
     display: block;
     width: 80%;
@@ -181,10 +185,10 @@ p {
     background: red;
 }
 
-.board__piece.dark {
-    background: red;
+.board__piece.player-one {
+    background: #eeeedd;
 }
 
-.board__piece.light {
-    background: yellow;
+.board__piece.player-two {
+    background: #cc8833;
 }
