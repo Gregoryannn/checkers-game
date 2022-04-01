@@ -254,6 +254,25 @@
         app.position.diff.x = (app.position.piece.x - app.position.destiny.x) < 0 ? (app.position.piece.x - app.position.destiny.x) * -1 : app.position.piece.x - app.position.destiny.x;
     };
 
+    /**
+     * Set piece like king.
+     * @param {object} piece DOM element.
+     */
+    app.setKing = function(piece) {
+        piece.classList.add('king');
+    };
+
+
+    /**
+     * Check if selected piece is king.
+     * @param  {object}  piece DOM element.
+     * @return {Boolean}       True if is king or false if not.
+     */
+    app.isKing = function(piece) {
+        return piece.classList.contains('king');
+    };
+
+
 
     /**
      * Change the player's turn.
