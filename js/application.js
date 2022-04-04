@@ -196,12 +196,14 @@
                             app.movePiece(capturedPiece);
                             app.player.one.score++;
                             app.updateScore();
+                            app.verifyNewCapture();
                         }
                     } else {
                         if (capturedPiece && app.getPieceType(capturedPiece) === "player-one") {
                             app.movePiece(capturedPiece);
                             app.player.two.score++;
                             app.updateScore();
+                            app.verifyNewCapture();
                         }
                     }
                 }
@@ -220,6 +222,104 @@
         return app.isPlayerOne && app.position.destiny.y < app.position.piece.y || !app.isPlayerOne && app.position.destiny.y > app.position.piece.y ? true : false;
     };
 
+
+    /**
+     * Check if there is piece to be captured.
+     * @todo: refactoring is needed.
+     */
+    app.verifyNewCapture = function() {
+        var domNextPiece = null,
+            domNextSquare = null,
+            domFuturePiece = null,
+            domFutureSquare = null,
+            dataValue = null;
+        nextSquare = [], futureSquare = [];
+        if (app.isKing(app.selectedPiece)) {
+            nextSquare = [{
+                y: app.position.destiny.y - 1,
+                x: app.position.destiny.x + 1
+            }, {
+                y: app.position.destiny.y - 1,
+                x: app.position.destiny.x - 1
+            }, {
+                y: app.position.destiny.y + 1,
+                x: app.position.destiny.x + 1
+            }, {
+                y: app.position.destiny.y + 1,
+                x: app.position.destiny.x - 1
+            }];
+            futureSquare = [{
+                y: app.position.destiny.y - 2,
+                x: app.position.destiny.x + 2
+            }, {
+                y: app.position.destiny.y - 2,
+                x: app.position.destiny.x - 2
+            }, {
+                y: app.position.destiny.y + 2,
+                x: app.position.destiny.x + 2
+            }, {
+                y: app.position.destiny.y + 2,
+                x: app.position.destiny.x - 2
+            }];
+        } else {
+            if (app.isPlayerOne) {
+                nextSquare = [{
+                    y: app.position.destiny.y - 1,
+                    x: app.position.destiny.x + 1
+                }, {
+                    y: app.position.destiny.y - 1,
+                    x: app.position.destiny.x - 1
+                }];
+                futureSquare = [{
+                    y: app.position.destiny.y - 2,
+                    x: app.position.destiny.x + 2
+                }, {
+                    y: app.position.destiny.y - 2,
+                    x: app.position.destiny.x - 2
+                }];
+            } else {
+                nextSquare = [{
+                    y: app.position.destiny.y + 1,
+                    x: app.position.destiny.x + 1
+                }, {
+                    y: app.position.destiny.y + 1,
+                    x: app.position.destiny.x - 1
+                }];
+                futureSquare = [{
+                    y: app.position.destiny.y + 2,
+                    x: app.position.destiny.x + 2
+                }, {
+                    y: app.position.destiny.y + 2,
+                    x: app.position.destiny.x - 2
+                }];
+            }
+        }
+
+
+        for (var i = 0, len = nextSquare.length; i < len; i++) {
+            dataValue = nextSquare[i].y + "-" + nextSquare[i].x;
+            domNextSquare = app.board.querySelectorAll('[data-position="' + dataValue + '"]')[0] || false;
+            if (domNextSquare) {
+                domNextPiece = domNextSquare.getElementsByClassName("board__piece")[0] || false;
+            }
+            dataValue = futureSquare[i].y + "-" + futureSquare[i].x;
+            domFutureSquare = app.board.querySelectorAll('[data-position="' + dataValue + '"]')[0] || false;
+            if (domFutureSquare) {
+                domFuturePiece = domFutureSquare.getElementsByClassName("board__piece")[0] || false;
+            }
+            if (domNextPiece && !domFuturePiece && domFutureSquare) {
+                console.log("há uma peça para capturar.");
+                break;
+            } else {
+                if (i === len - 1) {
+                    console.log("não há possibilidade de captura.");
+                    app.changePlayer();
+                }
+            }
+        }
+    };
+
+
     /**
      * Move the piece to the destiny. If has capture, remove.
      * @param  {object} captured DOM element to remove or false.
@@ -233,30 +333,87 @@
     };
 
     /**
+     * 
      * Get the captured piece.
+     * @todo: refactoring is needed.
      * @return {object} DOM element or false.
+     * 
      */
 
     app.getCaptured = function() {
         var dataValue = null,
-            captured = null;
-        if (app.isPlayerOne) {
+            captured = null,
+            coordinates = {
+                x: null,
+                y: null
+            };
+        if (app.isKing(app.selectedPiece)) {
             if (app.position.piece.x > app.position.destiny.x) {
-                dataValue = app.position.destiny.y + 1 + "-" + (app.position.destiny.x + 1);
+                console.log("KING foi pra esquerda");
+                coordinates.x = app.position.destiny.x + 1;
             } else {
-                dataValue = app.position.destiny.y + 1 + "-" + (app.position.destiny.x - 1);
+                console.log("KING foi pra direita");
+                coordinates.x = app.position.destiny.x - 1;
             }
-        } else {
-            if (app.position.piece.x > app.position.destiny.x) {
-                dataValue = app.position.destiny.y - 1 + "-" + (app.position.destiny.x + 1);
+            if (app.position.piece.y > app.position.destiny.y) {
+                console.log("KING foi pra cima");
+                coordinates.y = app.position.destiny.y + 1;
             } else {
-                dataValue = app.position.destiny.y - 1 + "-" + (app.position.destiny.x - 1);
+                console.log("KING foi pra baixo");
+                coordinates.y = app.position.destiny.y - 1;
+            }
+            dataValue = coordinates.y + "-" + coordinates.x;
+        } else {
+            if (app.isPlayerOne) {
+                if (app.position.piece.x > app.position.destiny.x) {
+                    console.log("playerOne foi pra esquerda");
+                    dataValue = app.position.destiny.y + 1 + "-" + (app.position.destiny.x + 1);
+                } else {
+                    console.log("playerOne foi pra direita");
+                    dataValue = app.position.destiny.y + 1 + "-" + (app.position.destiny.x - 1);
+                }
+            } else {
+                if (app.position.piece.x > app.position.destiny.x) {
+                    console.log("playerTwo foi pra esquerda");
+                    dataValue = app.position.destiny.y - 1 + "-" + (app.position.destiny.x + 1);
+                } else {
+                    console.log("playerTwo foi pra direita");
+                    dataValue = app.position.destiny.y - 1 + "-" + (app.position.destiny.x - 1);
+                }
             }
         }
+        // if (app.isPlayerOne && !app.isKing(app.selectedPiece)) {
+        // 	if (app.position.piece.x > app.position.destiny.x) {
+        // 		dataValue = (app.position.destiny.y + 1) + '-' + (app.position.destiny.x + 1);
+        // 	}
+        // 	else {
+        // 		dataValue = (app.position.destiny.y + 1) + '-' + (app.position.destiny.x - 1);
+        // 	}
+        // }
+        // else {
+        // 	if (!app.isPlayerOne && app.isKing(app.selectedPiece)) {
+        // 		if (app.position.piece.x > app.position.destiny.x) {
+        // 			dataValue = (app.position.destiny.y + 1) + '-' + (app.position.destiny.x + 1);
+        // 		}
+        // 		else {
+        // 			dataValue = (app.position.destiny.y + 1) + '-' + (app.position.destiny.x - 1);
+        // 		}		
+        // 	}
+        // 	else {
+        // 		if (app.position.piece.x > app.position.destiny.x) {
+        // 			dataValue = (app.position.destiny.y - 1) + '-' + (app.position.destiny.x + 1);
+        // 		}
+        // 		else {
+        // 			dataValue = (app.position.destiny.y - 1) + '-' + (app.position.destiny.x - 1);
+        // 		}
+        // 	}
+        // }
         captured = app.board.querySelectorAll('[data-position="' + dataValue + '"]')[0];
         return captured.getElementsByClassName("board__piece")[0] || false;
     };
-
+    /**
+     * Configure the coordinates.
+     */
     app.setMatchPosition = function() {
         app.position.piece.y = app.getPosition(app.selectedSquare).y;
         app.position.piece.x = app.getPosition(app.selectedSquare).x;
@@ -265,36 +422,41 @@
         app.position.diff.y = app.position.piece.y - app.position.destiny.y < 0 ? (app.position.piece.y - app.position.destiny.y) * -1 : app.position.piece.y - app.position.destiny.y;
         app.position.diff.x = app.position.piece.x - app.position.destiny.x < 0 ? (app.position.piece.x - app.position.destiny.x) * -1 : app.position.piece.x - app.position.destiny.x;
     };
-
+    /**
+     * Set piece like king.
+     * @param {object} piece DOM element.
+     */
+    app.setKing = function(piece) {
+        piece.classList.add("king");
+    };
+    /**
+     * Check if selected piece is king.
+     * @param  {object}  piece DOM element.
+     * @return {Boolean}       True if is king or false if not.
+     */
+    app.isKing = function(piece) {
+        return piece.classList.contains("king");
+    };
     /**
      * Change the player's turn.
      */
-
     app.changePlayer = function() {
         app.isPlayerOne = !app.isPlayerOne;
     };
-
-
     /**
      * Check if there is piece in the square.
      * @param  {object}  square DOM element
      * @return {Boolean}        true if there is piece or false if not.
      */
-
-
     app.hasPiece = function(square) {
         var piece = square.getElementsByClassName("board__piece")[0];
         return piece ? true : false;
     };
-
-
     /**
      * Get the square's position in the board.
      * @param  {object} element A DOM element.
      * @return {object}         Position x and y of the element.
      */
-
-
     app.getPosition = function(element) {
         var dataPos = element.getAttribute("data-position").split("-");
         return {
@@ -302,58 +464,45 @@
             x: parseInt(dataPos[1])
         };
     };
-
     /**
      * Get the piece's type.
      * @param  {object} element A DOM element.
      * @return {String}         Type of the piece.
      */
-
     app.getPieceType = function(element) {
         return element.getAttribute("data-piece-type");
     };
-
     /**
      * Update the visual score.
      */
-
     app.updateScore = function() {
         app.player.one.dom.score.innerHTML = app.player.one.score;
         app.player.two.dom.score.innerHTML = app.player.two.score;
     };
-
     /**
      * Update player's name.
      */
-
     app.updatePlayer = function() {
         app.player.one.dom.name.innerHTML = app.player.one.name + ": ";
         app.player.two.dom.name.innerHTML = app.player.two.name + ": ";
     };
-
-
     /**
      * @todo: Exibir um feedback para o usuário.
      */
-
     app.showMessage = function(message) {
         console.log("### ", message);
     };
-
     /**
      * Reset global variables.
      */
-
     app.resetVars = function() {
         app.selectedPiece.classList.remove("selected");
         app.selectedPiece = null;
         app.selectedSquare = null;
         app.selectedDestiny = null;
     };
-
     /**
      * Let's go =]
      */
-
     app.init();
 })();

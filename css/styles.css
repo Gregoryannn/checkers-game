@@ -185,10 +185,19 @@ p {
     background: red;
 }
 
+.board__piece.king {
+    background: url(../img/icon-crown.png) center no-repeat;
+}
+
 .board__piece.player-one {
-    background: #eeeedd;
+    background-color: #eeeedd;
 }
 
 .board__piece.player-two {
-    background: #cc8833;
+    background-color: #cc8833;
+}
+
+.board__piece.selected {
+    border: 1px solid #000;
+    box-shadow: 0 0 15px 5px #000;
 }
