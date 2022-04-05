@@ -1,122 +1,101 @@
 (function() {
-    /**
-     * Set namespace and options default.
-     */
-    var app = {},
-        settings = {
-            scope: "game-stage",
-            board: "board",
-            score: {
-                element: "score",
-                playerOne: "score__player-one",
-                playerTwo: "score__player-two"
-            },
-            player: {
-                one: {
-                    name: "player One"
+        /**
+         * Set namespace and options default.
+         */
+        var app = {},
+            settings = {
+                scope: "game-stage",
+                board: "board",
+                score: {
+                    element: "score",
+                    playerOne: "score__player-one",
+                    playerTwo: "score__player-two"
+                },
+                player: {
+                    one: {
+                        name: "Player One"
+                    },
+                    two: {
+                        name: "Player Two"
+                    }
+                }
+            };
+        /**
+         * Init is like a summary of process.
+         */
+        app.init = function() {
+            app.setup();
+            app.build();
+            app.attach();
+            app.updatePlayer();
+            //  app.updateScore();
+            //  app.bind();
+        };
+
+        /**
+         * Get elements from DOM and initialize some objects.
+         */
+
+        app.setup = function() {
+            app.scope = document.getElementById(settings.scope), app.board = app.scope.getElementsByClassName(settings.board)[0];
+        };
+
+
+        /**
+         * Create HTML for board and pieces.
+         */
+
+        app.build = function() {
+            var html = [];
+            for (var y = 0; y < 8; y++) {
+                html.push('<div class="row">');
+                for (var x = 0; x < 8; x++) {
+                    var squareType = (y + x) % 2 ? "dark" : "light";
+                    html.push('<span class="board__square ' + squareType + '" data-position="' + y + "-" + x + '">');
+                    if (squareType === "dark" && y > 4) {
+                        html.push('<span class="board__piece player-one" data-piece-type="player-one"></span>');
+                    }
+                    if (squareType === "dark" && y < 3) {
+                        html.push('<span class="board__piece player-two" data-piece-type="player-two"></span>');
+                    }
+                    html.push("</span>");
+                }
+                html.push("</div>");
+            }
+            app.board.innerHTML = html.join("");
+        };
+
+
+        /**
+         * Setup after the game built.
+         */
+
+
+        app.attach = function() {
+            app.squares = document.getElementsByClassName("board__square dark");
+            app.score = app.scope.getElementsByClassName(settings.score.element)[0];
+            elmPlayerTwo = app.score.getElementsByClassName(settings.score.playerTwo)[0].getElementsByTagName("span");
+            app.selectedPiece = null;
+            app.selectedSquare = null;
+            app.selectedDestiny = null;
+
+            app.player = {
+                    one: {
+                        score: 0
+                    }
                 },
                 two: {
-                    name: "player Two"
+                    score: 0
                 }
-            }
-        };
-    /**
-     * Init is like a summary of process.
-     */
-    app.init = function() {
-        app.setup();
-        app.build();
-        app.attach();
-        app.updatePlayer();
-        app.updateScore();
-        app.bind();
-    };
-
-    /**
-     * Get elements from DOM and initialize some objects.
-     */
-
-    app.setup = function() {
-        app.scope = document.getElementById(settings.scope), app.board = app.scope.getElementsByClassName(settings.board)[0];
-    };
-
-
-    /**
-     * Create HTML for board and pieces.
-     */
-
-    app.build = function() {
-        var html = [];
-        for (var y = 0; y < 8; y++) {
-            html.push('<div class="row">');
-            for (var x = 0; x < 8; x++) {
-                var squareType = (y + x) % 2 ? "dark" : "light";
-                html.push('<span class="board__square ' + squareType + '" data-position="' + y + "-" + x + '">');
-                if (squareType === "dark" && y > 4) {
-                    html.push('<span class="board__piece player-one" data-piece-type="player-one"></span>');
-                }
-                if (squareType === "dark" && y < 3) {
-                    html.push('<span class="board__piece player-two" data-piece-type="player-two"></span>');
-                }
-                html.push("</span>");
-            }
-            html.push("</div>");
-        }
-        app.board.innerHTML = html.join("");
-    };
-
-
-    /**
-     * Setup after the game built.
-     */
-
-
-    app.attach = function() {
-        app.squares = document.getElementsByClassName("board__square dark");
-        app.score = app.scope.getElementsByClassName(settings.score.element)[0];
-        var elmPlayerOne = app.score.getElementsByClassName(settings.score.playerOne)[0].getElementsByTagName("span"),
-            elmPlayerTwo = app.score.getElementsByClassName(settings.score.playerTwo)[0].getElementsByTagName("span");
-        app.selectedPiece = null;
-        app.selectedSquare = null;
-        app.selectedDestiny = null;
-        app.position = {
-            piece: {
-                x: null,
-                y: null
-            },
-            destiny: {
-                x: null,
-                y: null
-            },
-            diff: {
-                x: null,
-                y: null
-            }
-        };
-        app.player = {
-            one: {
-                name: settings.player.one.name,
-                score: 0,
-                dom: {
-                    name: elmPlayerOne[0],
-                    score: elmPlayerOne[1]
-                }
-            },
-            two: {
-                name: settings.player.two.name,
-                score: 0,
-                dom: {
-                    name: elmPlayerTwo[0],
-                    score: elmPlayerTwo[1]
-                }
-            }
         };
         app.isPlayerOne = true;
     };
 
+
     /**
      * General listeners.
      */
+
 
     app.bind = function() {
         for (var i = 0, len = app.squares.length; i < len; i++) {
@@ -125,6 +104,7 @@
             }, false);
         }
     };
+
 
     /**
      * Setup the process of current match.
@@ -135,14 +115,15 @@
         if (app.selectedPiece == null) {
             app.choosePiece(target);
         } else {
-            if (!app.hasPiece(target)) {
-                app.chooseDestiny(target);
-                app.setMatchPosition();
-                app.checkMove();
+            if (!app.getPiece(target)) {
+                app.selectedDestiny = target;
+                app.destinyPosition = app.getPosition(target);
+                app.jump();
                 app.resetVars();
             } else {
                 app.showMessage("Você deve escolher um destino válido.");
                 app.resetVars();
+                return false;
             }
         }
     };
@@ -152,16 +133,19 @@
      * @param  {object} target The selected square.
      */
 
-    app.choosePiece = function(target) {
-        if (app.hasPiece(target)) {
-            app.selectedPiece = target.getElementsByClassName("board__piece")[0];
-            var pieceType = app.getPieceType(app.selectedPiece);
-            if (app.isPlayerOne && pieceType === "player-one" || !app.isPlayerOne && pieceType === "player-two") {
-                app.selectedSquare = target;
+    app.choosePiece = function(square) {
+        var pieceType = null,
+            piece = app.getPiece(square);
+        if (piece) {
+            app.selectedPiece = piece;
+            pieceType = app.getPieceType(piece);
+            if (app.isValidPiece(pieceType)) {
+                app.selectedSquare = square;
                 app.selectedPiece.classList.add("selected");
             } else {
                 app.selectedPiece = null;
-                app.showMessage("Espere a sua vez de jogar || você não pode jogar com uma peça do adversário.");
+                app.showMessage("Você não pode jogar com uma peça do adversário.");
+                return false;
             }
         } else {
             app.showMessage("Você deve escolher uma peça antes do destino.");
@@ -172,44 +156,28 @@
      * Select a destiny to the piece.
      * @param  {object} target The selected square.
      */
-
-    app.chooseDestiny = function(target) {
-        app.selectedDestiny = target;
+    app.hasPiece = function(square) {
+        app.getPiece(square);
     };
 
-    /**
-     * The main rules of the game
-     * 1 x 1 = a simple movement.
-     * 2 x 2 = a movement with capture.
-     */
 
-    app.checkMove = function() {
-        if (app.validateMove()) {
-            if (app.position.diff.x === 1 && app.position.diff.y === 1) {
-                app.movePiece();
-                app.changePlayer();
-            } else {
-                if (app.position.diff.x === 2 && app.position.diff.y === 2) {
-                    var capturedPiece = app.getCaptured();
-                    if (app.isPlayerOne) {
-                        if (capturedPiece && app.getPieceType(capturedPiece) === "player-two") {
-                            app.movePiece(capturedPiece);
-                            app.player.one.score++;
-                            app.updateScore();
-                            app.verifyNewCapture();
-                        }
-                    } else {
-                        if (capturedPiece && app.getPieceType(capturedPiece) === "player-one") {
-                            app.movePiece(capturedPiece);
-                            app.player.two.score++;
-                            app.updateScore();
-                            app.verifyNewCapture();
-                        }
-                    }
-                }
-            }
+
+
+    // pega a peça e retorna a mesma ou false.
+    app.getPiece = function(square) {
+        return square.getElementsByClassName("board__piece")[0] || false;
+    };
+    // verifica se a peça selecionada é do jogador.
+    app.isValidPiece = function(pieceType, isToCapture) {
+        var captureFlag = isToCapture || false;
+        if (captureFlag) {
+            return app.isPlayerOne && pieceType === "player-two" || !app.isPlayerOne && pieceType === "player-one" ? true : false;
+
+
+
+
         } else {
-            app.showMessage("Você deve movimentar a peça para frente.");
+            return app.isPlayerOne && pieceType === "player-one" || !app.isPlayerOne && pieceType === "player-two" ? true : false;
         }
     };
 
@@ -227,14 +195,25 @@
      * Check if there is piece to be captured.
      * @todo: refactoring is needed.
      */
-    app.verifyNewCapture = function() {
-        var domNextPiece = null,
-            domNextSquare = null,
-            domFuturePiece = null,
-            domFutureSquare = null,
-            dataValue = null;
-        isAdversary = null, nextSquare = [], futureSquare = [];
+    app.isKing = function(piece) {
+        return piece.classList.contains("king");
+    };
+    /**
+     * Set piece like king.
+     * @param {object} piece DOM element.
+     */
+    app.setKing = function(piece) {
+        piece.classList.add("king");
+    };
+    // configura cordenadas possiveis
+    app.setupPosibilities = function() {
+        var position = app.getPosition(app.selectedDestiny);
+
+
+
         if (app.isKing(app.selectedPiece)) {
+
+
             nextSquare = [{
                 y: app.position.destiny.y - 1,
                 x: app.position.destiny.x + 1
@@ -248,6 +227,9 @@
                 y: app.position.destiny.y + 1,
                 x: app.position.destiny.x - 1
             }];
+
+
+
             futureSquare = [{
                 y: app.position.destiny.y - 2,
                 x: app.position.destiny.x + 2
